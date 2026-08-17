@@ -1,0 +1,27 @@
+
+
+nav {
+    height: 100vh;
+    width: 200px;
+    position: fixed;
+    border: 1px solid black;
+    box-sizing: border-box;
+    left: 0;
+    top:0;
+    padding: 10px;
+    background-color: blueviolet;
+}
+
+nav a {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    padding: 10px;
+    color: white;
+    background-color :blueviolet;
+
+}
+
+nav a:hover {
+    color: black;
+}

@@ -17,9 +17,22 @@ def db_connector():
 def admin():
     return render_template('admin_login.html')
 
-@app.route('/dashboard')
+@app.route('/admin_dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('admin_dashboard.html')
+
+@app.route('/customer_management')
+def customer_management():
+    return render_template('customer_management.html')
+
+@app.route('/account_creation')
+def account_creation():
+    return render_template('account_creation.html')
+
+@app.route('/transaction')
+def transaction():
+    return render_template('transaction.html')
+
 
 @app.route('/admin_log',methods=['post'])
 def admin_log():
@@ -38,8 +51,28 @@ def admin_log():
         return render_template('/admin_login.html', error = 'Email or Password Invalid')
 
     if email == info['email']:
-        return redirect ('/dashboard')
+        return redirect ('/admin_dashboard')
 
+@app.route('/customer_management_created', methods=['post'])
+def customer_management_created():
+    fistname = request.form['firstname']
+    lastname = request.form['lastname']
+    phone = request.form['phone']
+    email = request.form['email']
+    pancard = request.form['pancard']
+    ifsc = request.form['ifsc']
+    address = request.form['address']
+
+    db = db.connector()
+    cursor = db.cursor(dictionary = True)
+
+    query ("insert into customer_management(firstname,lastname,phone,email,pancard,ifsc,address) values( %s ,%s ,%s ,%s ,%s ,%s,%s)")
+    values = (firstname,lastname,phone,email,pancard,ifsc,address)
+
+    cursor.execute(query,values)
+    db.commit()
+
+    return redirct('/customer_managment')
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -55,7 +55,7 @@ def admin_log():
 
 @app.route('/customer_management_created', methods=['post'])
 def customer_management_created():
-    fistname = request.form['firstname']
+    firstname = request.form['firstname']
     lastname = request.form['lastname']
     phone = request.form['phone']
     email = request.form['email']
@@ -63,16 +63,16 @@ def customer_management_created():
     ifsc = request.form['ifsc']
     address = request.form['address']
 
-    db = db.connector()
+    db = db_connector()
     cursor = db.cursor(dictionary = True)
 
-    query ("insert into customer_management(firstname,lastname,phone,email,pancard,ifsc,address) values( %s ,%s ,%s ,%s ,%s ,%s,%s)")
+    query = ("insert into customer_management(firstname,lastname,phone,email,pancard,ifsc,address) values( %s ,%s ,%s ,%s ,%s ,%s,%s)")
     values = (firstname,lastname,phone,email,pancard,ifsc,address)
 
     cursor.execute(query,values)
     db.commit()
 
-    return redirct('/customer_managment')
+    return redirect('/customer_management')
 
 if __name__ == '__main__':
     app.run(debug=True)

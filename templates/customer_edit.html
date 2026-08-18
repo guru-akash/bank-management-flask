@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/customer_management.css')}}">
+</head>
+<body>
+    {% include '/layouts/menu.html' %}
+    <form action="/edit_customer" method="post">
+        <h2>Edit_Customer :-</h2>
+        <label for="">First Name :</label>
+        <input type="text" name="firstname" value="{{customer['firstname']}}" required>
+        <label for="">Last Name :</label>
+        <input type="text" name="lastname" value="{{customer['lastname']}}"><br><br>
+        <label for="">Phone Number :</label>
+        <input type="number" name="phone" value="{{customer['phone']}}" required><br><br>
+        <label for="">Email</label>
+        <input type="text" name="email" value="{{customer['email']}}" required><br><br>
+        <label for="">Pan Card :</label>
+        <input type="text" name="pancard" value="{{customer['pancard']}}" required><br><br>
+        <label for="">IFSC Number</label>
+        <input type="text" name="ifsc" value="{{customer['ifsc']}}" required><br><br>
+        <label for="">Aadhaar Card</label>
+        <input type="number" name="aadhaar" value="{{customer['aadhaar']}}" required><br><br>
+        <label for="">Address</label>
+        <input type="text" name="address" values="{{customer['address']}}" required><br><br>
+        <button type="submit" >Create</button>
+        
+    </form>
+
+</body>
+</html>

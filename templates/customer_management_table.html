@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/customer_table.css')}}">
+</head>
+<body>
+     {% include '/layouts/menu.html' %}
+     <div>
+        <button><a href="/customer_management">Create Customer</a></button><br>
+     </div>
+
+    <table>
+        <tr>
+            <th>id</th>
+            <th>First Name </th>
+            <th>Last Name</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Pan Card</th>
+            <th>IFSC Code</th>
+            <th>Aathar card</th>
+            <th>Address</th>
+            <th>actions</th>
+        </tr>
+        {% for customer in customers %}
+            <tr>
+                <td>{{loop.index}}</td>
+                <td>{{customer['firstname']}}</td>
+                <td>{{customer['lastname']}}</td>
+                <td>{{customer['phone']}}</td>
+                <td>{{customer['email']}}</td>
+                <td>{{customer['pancard']}}</td>
+                <td>{{customer['ifsc']}}</td>
+                <td>{{customer['aadhaar']}}</td>
+                <td>{{customer['address']}}</td>
+                <td>
+                <button><a href="/customer_edit/{{customer['id']}}">Edit</a></button>
+
+                {% if customer["status"]== 1 %}
+                <button > <a href="/delete_customer/{{customer['id']}}" onclick="return confirm('Are you sure you want to delete this student?') ">Delete</a></button>
+                {% else %}
+                <button><a href="/active_customer/{{customer['id']}}" onclick="return confirm('Are you sure you want to active this student?')">Active</a></button>
+                {% endif %}
+            </td>
+            </tr>
+
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -25,6 +25,7 @@ def dashboard():
 def customer_management():
     return render_template('customer_management.html')
 
+
 @app.route('/account_creation')
 def account_creation():
     return render_template('account_creation.html')
@@ -61,18 +62,66 @@ def customer_management_created():
     email = request.form['email']
     pancard = request.form['pancard']
     ifsc = request.form['ifsc']
+    aadhaar = request.form['aadhaar'] 
     address = request.form['address']
 
     db = db_connector()
     cursor = db.cursor(dictionary = True)
 
-    query = ("insert into customer_management(firstname,lastname,phone,email,pancard,ifsc,address) values( %s ,%s ,%s ,%s ,%s ,%s,%s)")
-    values = (firstname,lastname,phone,email,pancard,ifsc,address)
+    query = ("insert into customer_management(firstname,lastname,phone,email,pancard,ifsc,aadhaar,address) values( %s ,%s ,%s ,%s ,%s ,%s,%s,%s)")
+    values = (firstname,lastname,phone,email,pancard,ifsc,aadhaar,address)
 
     cursor.execute(query,values)
     db.commit()
 
-    return redirect('/customer_management')
+    return redirect('/customer_management_table')
+
+@app.route('/customer_management_table')
+def customer_table():
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    query = 'select * from customer_management'
+
+    cursor.execute(query)
+    customers = cursor.fetchall()
+
+    return render_template('customer_management_table.html', customers = customers)
+
+@app.route('/customer_edit/<id>')
+def customer_edit(id):
+    db=db_connector()
+    cursor = db.cursor(dictionary=True )
+
+    query = 'select * from customer_management where id=%s'
+    values = (id,)
+    cursor.execute(query,values)
+
+    customer = cursor.fetchone()
+
+    return render_template('/customer_edit.html' ,customer = customer)
+
+@app.route('/delete_customer/<id>')
+def delete_customer(id):
+    db=db_connector()
+    cursor = db.cursor(dictionary=True )
+
+    query = 'delete from customer_management where id = %s'
+    values = (id,)
+    cursor.execute(query,values)
+
+    return redirect('/customer_management_table')
+
+@app.route('/active_customer/<id>')
+def active_customer(id):
+    db=db_connector()
+    cursor = db.cursor(dictionary=True )
+
+    query = 'update customer_management set status = 1 where id = %s'
+    values = (id,)
+    cursor.execute(query,values)
+
+    return redirect('/customer_management_table')
 
 if __name__ == '__main__':
     app.run(debug=True)

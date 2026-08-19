@@ -40,9 +40,9 @@
                 <button><a href="/customer_edit/{{customer['id']}}">Edit</a></button>
 
                 {% if customer["status"]== 1 %}
-                <button > <a href="/delete_customer/{{customer['id']}}" onclick="return confirm('Are you sure you want to delete this student?') ">Delete</a></button>
+                <button > <a href="/delete_customer/{{customer['id']}}" onclick="return confirm('Are you sure you want to delete this customer?') ">Delete</a></button>
                 {% else %}
-                <button><a href="/active_customer/{{customer['id']}}" onclick="return confirm('Are you sure you want to active this student?')">Active</a></button>
+                <button><a href="/active_customer/{{customer['id']}}" onclick="return confirm('Are you sure you want to active this customer?')">Active</a></button>
                 {% endif %}
             </td>
             </tr>

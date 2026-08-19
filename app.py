@@ -25,11 +25,6 @@ def dashboard():
 def customer_management():
     return render_template('customer_management.html')
 
-
-@app.route('/account_creation')
-def account_creation():
-    return render_template('account_creation.html')
-
 @app.route('/transaction')
 def transaction():
     return render_template('transaction.html')
@@ -101,27 +96,68 @@ def customer_edit(id):
 
     return render_template('/customer_edit.html' ,customer = customer)
 
+@app.route('/update_customer/<id>',methods=['post'])
+def update_customer(id):
+    firstname = request.form['firstname']
+    lastname = request.form['lastname']
+    phone = request.form['phone']
+    email = request.form['email']
+    pancard = request.form['pancard']
+    ifsc = request.form['ifsc']
+    aadhaar = request.form['aadhaar'] 
+    address = request.form['address']
+
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+    
+    query = 'update customer_management set firstname=%s,lastname=%s,phone=%s,email=%s,pancard=%s,ifsc=%s,aadhaar=%s,address=%s where id = %s'
+    values = (firstname,lastname,phone,email,pancard,ifsc,aadhaar,address,id)
+    cursor.execute(query,values)
+
+    db.commit()
+    return redirect('/customer_management_table')
+
+
 @app.route('/delete_customer/<id>')
 def delete_customer(id):
+    print(id)
     db=db_connector()
-    cursor = db.cursor(dictionary=True )
+    cursor = db.cursor()
 
-    query = 'delete from customer_management where id = %s'
+    query = 'update customer_management set status = 0 where id = %s'
     values = (id,)
+    print(query,values)
     cursor.execute(query,values)
+
+    db.commit()
 
     return redirect('/customer_management_table')
 
 @app.route('/active_customer/<id>')
 def active_customer(id):
     db=db_connector()
-    cursor = db.cursor(dictionary=True )
+    cursor = db.cursor()
 
     query = 'update customer_management set status = 1 where id = %s'
     values = (id,)
     cursor.execute(query,values)
 
+    db.commit()
+
     return redirect('/customer_management_table')
+
+@app.route('/account_creation')
+def account_creation():
+
+    db = db_connector()
+    cursor = db.cursor(dictionary=True)
+
+    query = "SELECT id, firstname, lastname FROM customer_management"
+    cursor.execute(query)
+
+    customers = cursor.fetchall()
+
+    return render_template('account_creation.html',customers=customers)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -9,7 +9,7 @@
 </head>
 <body>
     {% include '/layouts/menu.html' %}
-    <form action="/edit_customer" method="post">
+    <form action="/update_customer/{{customer['id']}}" method="post">
         <h2>Edit_Customer :-</h2>
         <label for="">First Name :</label>
         <input type="text" name="firstname" value="{{customer['firstname']}}" required>
@@ -27,7 +27,7 @@
         <input type="number" name="aadhaar" value="{{customer['aadhaar']}}" required><br><br>
         <label for="">Address</label>
         <input type="text" name="address" values="{{customer['address']}}" required><br><br>
-        <button type="submit" >Create</button>
+        <button type="submit" >update</button>
         
     </form>
 

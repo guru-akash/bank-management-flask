@@ -4,9 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/account_creation.css')}}">
 </head>
 <body>
      {% include '/layouts/menu.html' %}
+    <form action="">
+     <label>Customer</label>
+
+        <select name="customer_id">
+
+            <option value="">Select Customer</option>
+
+            {% for customer in customers %}
+
+                <option value="{{ customer.id }}">
+                    {{ customer.firstname }} {{ customer.lastname }}
+                </option>
+
+            {% endfor %}
+        </select>    
+    <label>Account Type</label>
+        <select name="account_type">
+           <option value="">Select Account Type</option>
+            <option value="savings">Savings Account</option>
+            <option value="business">Business Account</option>
+         </select>
+
+        <br><br>
+
+        <label>Initial Deposit</label>
+        <input type="number" name="balance">
+
+        <br><br>
+
+        <button type="submit">Create Account</button>
+
+
+      
+    </form>
     
 </body>
 </html>

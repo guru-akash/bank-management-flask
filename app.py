@@ -1,4 +1,5 @@
 from flask import Flask ,render_template ,redirect , request
+import random
 import mysql.connector
 
 app = Flask(__name__)
@@ -120,13 +121,11 @@ def update_customer(id):
 
 @app.route('/delete_customer/<id>')
 def delete_customer(id):
-    print(id)
     db=db_connector()
     cursor = db.cursor()
 
     query = 'update customer_management set status = 0 where id = %s'
     values = (id,)
-    print(query,values)
     cursor.execute(query,values)
 
     db.commit()
@@ -158,6 +157,113 @@ def account_creation():
     customers = cursor.fetchall()
 
     return render_template('account_creation.html',customers=customers)
+
+@app.route('/create_account',methods=['post'])
+def create_account():
+    customer_id = request.form['customer_id']
+    account_type = request.form['account_type']
+    balance = request.form['balance']
+
+
+    account_number=random.randint(10**6,10**7-1)
+    account_num=f"19715{account_number}"
+
+    db = db_connector()
+    cursor = db.cursor()
+
+    query = 'insert into accounts(customer_id,account_type,balance,account_number) values(%s,%s,%s,%s)'
+    values = (customer_id,account_type,balance,account_num)
+    cursor.execute(query,values)
+
+    db.commit()
+
+    return redirect('/account_table')
+
+@app.route('/account_table')
+def account_table():
+    db=db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    query = ('select * from accounts')
+    cursor.execute(query)
+
+    accounts = cursor.fetchall()
+
+    return render_template('account_table.html',accounts = accounts)
+
+@app.route('/account_detail/<customer_id>')
+def account_detail(customer_id):
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    query = 'select c.firstname,c.lastname,c.phone,c.email,c.pancard,c.aadhaar,c.ifsc,c.address,a.account_number,a.account_type,a.balance from customer_management as c inner join accounts as a on c.id=a.customer_id where c.id =%s'
+    values = (customer_id,)
+    cursor.execute(query,values)
+
+    customer = cursor.fetchone()
+
+    return render_template('account_detail.html' ,customer=customer)
+
+@app.route('/account_edit/<customer_id>')
+def account_edit(customer_id):
+    db=db_connector()
+    cursor = db.cursor(dictionary=True )
+
+    query = 'select * from accounts where customer_id=%s'
+    values = (customer_id,)
+    cursor.execute(query,values)
+    account = cursor.fetchone()
+
+    customer_query = "SELECT id, firstname, lastname FROM customer_management where id =%s"
+    customer_value = (customer_id, )
+    cursor.execute(customer_query,customer_value)
+    customer = cursor.fetchone()
+
+    return render_template('account_edit.html' ,account = account ,customer = customer)
+
+@app.route('/update_account',methods=['post'])
+def update_account():
+    account_type = request.form['account_type']
+    balance = request.form['balance']
+
+    db = db_connector()
+    cursor = db.cursor()
+
+    query = 'update accounts set account_type = %s ,balance =%s'
+    values = (account_type,balance)
+    cursor.execute(query,values)
+    db.commit()
+
+    return redirect('/account_table')
+
+@app.route('/account_delete/<id>')
+def account_delete(id):
+    db=db_connector()
+    cursor = db.cursor()
+
+    query = 'update accounts set status = 0 where id = %s'
+    values = (id,)
+    cursor.execute(query,values)
+
+    db.commit()
+
+    return redirect('/account_table')
+
+@app.route('/account_active/<id>')
+def account_active(id):
+    db=db_connector()
+    cursor = db.cursor()
+
+    query = 'update accounts set status = 1 where id = %s'
+    values = (id,)
+    cursor.execute(query,values)
+
+    db.commit()
+
+    return redirect('/account_table')
+
+
+    
 
 if __name__ == '__main__':
     app.run(debug=True)

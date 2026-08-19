@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/account_detail.css')}}">
+</head>
+<body>
+    {% include '/layouts/menu.html' %}
+    <div>
+        {{customer}}
+        <h2>Account Person Personal Detail</h2><br><br>
+        <p>Full Name : {{customer['firstname']}} {{customer['lastname']}}</p><br>
+        <p>Mobile Number : {{customer['phone']}}</p><br>
+        <p>Email : {{customer['email']}}</p><br>
+        <p>Pan Card Number : {{customer['Pancard']}}</p><br>
+        <p>IFSC Number : {{customer['ifsc']}}</p><br>
+        <p>Aadhar Number : {{customer['aadhaar']}}</p><br>
+        <p>Address : {{customer['address']}}</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/account_table.css')}}">
+</head>
+<body>
+    {% include '/layouts/menu.html' %}
+    <button><a href="/account_creation">Account Create</a></button>
+    <table>
+        <tr>
+            <th>No</th>
+            <th>Account Number</th>
+            <th>Account Type</th>
+            <th>Balance</th>
+            <th>Account detail</th>
+            <th>Action</th>
+        </tr>
+        {% for account in accounts %}
+            <tr>
+                <td>{{loop.index}}</td>
+                <td>{{account['account_number']}}</td>
+                <td>{{account['account_type']}}</td>
+                <td>{{account['balance']}}</td>
+                <td><a href="/account_detail/{{account['customer_id']}}">Person Detail</a></td>
+                
+                <td>
+                    <button>
+                        <a href="/account_edit/{{account['customer_id']}}">edit</a>
+                    </button>
+                    <button>
+                        {% if account['status']==1 %}
+                        <a href="/account_delete/{{account['id']}}">delete</a>
+                        {% else %}
+                        <a href="/account_active/{{account['id']}}">active</a>
+                        {% endif %}
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+
+    </table>
+    
+</body>
+</html>

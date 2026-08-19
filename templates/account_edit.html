@@ -8,23 +8,11 @@
 </head>
 <body>
      {% include '/layouts/menu.html' %}
-    <form action="/create_account" method="post">
-     <label>Customer</label>
-
-        <select name="customer_id">
-
-            <option value="">Select Customer</option>
-
-            {% for customer in customers %}
-
-                <option value="{{ customer.id }}">
-                    {{ customer.firstname }} {{ customer.lastname }}
-                </option>
-
-            {% endfor %}
-        </select>    
+    <form action="/update_account" method="post">
+     <label>Customer : {{customer['firstname']}} {{customer['lastname']}}</label><br><br>
+  
     <label>Account Type</label>
-        <select name="account_type">
+        <select name="account_type" value="{{account['account_type']}}">
            <option value="">Select Account Type</option>
             <option value="savings">Savings Account</option>
             <option value="Current">Current Account</option>
@@ -34,7 +22,7 @@
         <br><br>
 
         <label>Initial Deposit</label>
-        <input type="number" name="balance">
+        <input type="number" name="balance" value="{{account['balance']}}">
 
         <br><br>
 

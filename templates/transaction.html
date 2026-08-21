@@ -4,9 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/transaction.css')}}">
 </head>
 <body>
-     {% include '/layouts/menu.html' %}
-    
+    {% include '/layouts/menu.html' %}
+    <table>
+        <tr>
+            <th>NO</th>
+            <th>Account Number</th>
+            <th>Account Type</th>
+            <th>IFSC Number</th>
+            <th>Transaction Type</th>
+            <th>Amount</th>
+            <th>Actions</th>
+        </tr>
+        {% for transaction in transactions %}
+        <tr>
+            <td>{{loop.index}}</td>
+            <td>{{transaction.account_number}}</td>
+            <td>{{transaction.account_type}}</td>
+            <td>{{transaction.ifsc}}</td>
+            <td>{{transaction.transaction_type}}</td>
+            <td>{{transaction.amount}}</td>
+            <td>
+                <button><a href="/approve_request/{{transaction.account_number}}">Approve</a></button>
+                <button><a href="/denied_request/{{transaction.id}}">Denied</a></button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>

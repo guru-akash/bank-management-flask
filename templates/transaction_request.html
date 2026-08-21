@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/transaction_request.css')}}">
+</head>
+<body>
+     {% include '/layouts/menu.html' %}
+    <form action="/request_form" method="post">
+        <h2>Transaction Request</h2><br><br>
+        <label for="">Account Number : </label>
+        <input type="number" name="account_number" required><br><br>
+        <label for="">Account Type : </label>
+            <select name="account_type" id="">
+                <option value="">select the type</option>
+                <option value="saving">Saving</option>
+                <option value="current">Current</option>
+                <option value="deposite">Deposite</option>
+            </select><br><br>
+        <label for="">IFSC Number : </label>
+        <input type="text" name="ifsc" required><br><br>
+        <label for="">Transaction Type : </label>
+            <select name="transaction_type" id="">
+                <option value="">select the type</option>
+                <option value="withdraw">Withdraw</option>
+                <option value="deposite">Deposite</option>
+                <option value="fund_transfer">Fund Transfer</option>
+            </select><br><br>
+        <label for="">Amount : </label>
+        <input type="number" name="amount" required><br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

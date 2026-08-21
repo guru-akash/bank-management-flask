@@ -26,9 +26,9 @@ def dashboard():
 def customer_management():
     return render_template('customer_management.html')
 
-@app.route('/transaction')
-def transaction():
-    return render_template('transaction.html')
+@app.route('/transaction_request')
+def transaction_request():
+    return render_template('transaction_request.html')
 
 
 @app.route('/admin_log',methods=['post'])
@@ -262,8 +262,63 @@ def account_active(id):
 
     return redirect('/account_table')
 
+@app.route('/request_form',methods =['post'])
+def request_form():
+    account_number = request.form['account_number']
+    account_type = request.form['account_type']
+    ifsc = request.form['ifsc']
+    transaction_type = request.form['transaction_type']
+    amount = request.form['amount']
+
+    db=db_connector()
+    cursor = db.cursor()
+    
+    query = 'insert into transaction_request(account_number,account_type,ifsc,transaction_type,amount) values (%s,%s,%s,%s,%s)'
+    values = (account_number.account_type,ifsc,transaction_type,amount)
+    cursor.execute(query,values)
+
+    db.commit()
+
+    return render_template ('transaction_request.html')
+
+@app.route('/transaction')
+def transaction():
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    query = 'select * from transaction_request where status = 1'
+    cursor.execute(query)
+
+    transactions = cursor.fetchall()
+
+    return render_template('transaction.html', transactions = transactions)
+
+@app.route('/approve_request/<account_number>')
+def approve_request(account_number):
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    balance_query = 'select balance from accounts where account_number = %s'
+    balance_values = (account_number, )
+    cursor.execute(balance_query,balance_values)
+
+    account =cursor.fetchone()
+
+    query = 'select * from transaction_request where account_number = %s'
+    values = (account_number, )
+    cursor.execute(query,values)
+
+    data = cursor.fetchone()
+
+    if data.transaction_type == 'withdraw':
+        balance = account.balance - data.amount
+    else :
+        balance = account.balance +data.amount
 
     
+            
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

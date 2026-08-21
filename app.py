@@ -266,20 +266,30 @@ def account_active(id):
 def request_form():
     account_number = request.form['account_number']
     account_type = request.form['account_type']
-    ifsc = request.form['ifsc']
     transaction_type = request.form['transaction_type']
     amount = request.form['amount']
 
     db=db_connector()
     cursor = db.cursor()
-    
-    query = 'insert into transaction_request(account_number,account_type,ifsc,transaction_type,amount) values (%s,%s,%s,%s,%s)'
-    values = (account_number.account_type,ifsc,transaction_type,amount)
-    cursor.execute(query,values)
 
-    db.commit()
+    check_query = 'select * from accounts where account_number = %s and account_type = %s '
+    check_values = (account_number,account_type)
+    cursor.execute(check_query,check_values)
 
-    return render_template ('transaction_request.html')
+    check = cursor.fetchone()
+
+    if check:
+
+        query = 'insert into transaction_request(account_number,account_type,transaction_type,amount) values (%s,%s,%s,%s)'
+        values = (account_number,account_type,transaction_type,amount)
+        cursor.execute(query,values)
+
+        db.commit()
+
+        return render_template ('transaction_request.html')
+
+    else:
+        return render_template('transaction_request.html', error = 'Invalid account number or account type ')
 
 @app.route('/transaction')
 def transaction():
@@ -310,14 +320,37 @@ def approve_request(account_number):
 
     data = cursor.fetchone()
 
-    if data.transaction_type == 'withdraw':
-        balance = account.balance - data.amount
+    if data['transaction_type'] == 'withdraw':
+        balance = account['balance'] - data['amount']
     else :
-        balance = account.balance +data.amount
+        balance = account['balance'] + data['amount']
 
+    update_query = 'update accounts set balance = %s where account_number = %s'
+    update_values = (balance,account_number)
+    cursor.execute(update_query,update_values)
+
+    approve = 2
+    status_query = 'update transaction_request set approvel_status=%s where account_number=%s'
+    status_values = (approve,account_number)
+    cursor.execute(status_query,status_values)
     
-            
+    db.commit()
 
+    return redirect('/transaction')
+
+        
+@app.route('/denied_request/<id>')
+def denied_request(id):
+    db = db_connector()
+    cursor = db.cursor()
+    denied = 3
+    query = 'update transaction_request set approvel_status = %s  where id = %s'
+    values = (denied,id)
+    cursor.execute(query,values)
+
+    db.commit()
+
+    return redirect('/transaction')
 
 
 if __name__ == '__main__':

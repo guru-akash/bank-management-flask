@@ -1,8 +1,9 @@
-from flask import Flask ,render_template ,redirect , request
+from flask import Flask ,render_template ,redirect , request ,session
 import random
 import mysql.connector
 
 app = Flask(__name__)
+app.secret_key = "your_secret_key"
 
 def db_connector():
     db = mysql.connector.connect(
@@ -16,11 +17,27 @@ def db_connector():
 
 @app.route('/')
 def admin():
-    return render_template('admin_login.html')
+    return render_template('login.html')
 
-@app.route('/admin_dashboard')
+@app.route('/dashboard')
 def dashboard():
-    return render_template('admin_dashboard.html')
+    return render_template('dashboard.html')
+
+@app.route('/cus_dashboard')
+def cus_dashboard():
+    session['id']=id
+
+    db = db_connector()
+    cursor = db.cursor(dictiomary = True)
+
+    query = 'select * from customer_management where id = %s'
+    values = (id, )
+    cursor.execute(query,value)
+
+    customer = cursor.fetchone()
+
+    return render_template('cus_dashboard.html', customer = customer )
+
 
 @app.route('/customer_management')
 def customer_management():
@@ -44,16 +61,30 @@ def admin_log():
     cursor.execute(query,values)
     info = cursor.fetchone()
 
-    if info["email"] is None:
-        return render_template('/admin_login.html', error = 'Email or Password Invalid')
+    if info:
+        session['email'] = info['email']
+        session['role'] = 'admin'
+        return redirect('/dashboard')
 
-    if email == info['email']:
-        return redirect ('/admin_dashboard')
+    cus_query = 'select * from customer_management where email = %s and password = %s'
+    cus_values = (email,password)
+    cursor.execute(cus_query,cus_values)
+    cus_info = cursor.fetchone()
+
+    if cus_info:
+        session['email'] = cus_info['email']
+        session['role'] = 'customer'
+        session['id']=cus_info['id']
+        return redirect('/cus_dashboard')
+    else :
+        return redirect('/')
+
 
 @app.route('/customer_management_created', methods=['post'])
 def customer_management_created():
     firstname = request.form['firstname']
     lastname = request.form['lastname']
+    password = request.form['password']
     phone = request.form['phone']
     email = request.form['email']
     pancard = request.form['pancard']
@@ -64,8 +95,8 @@ def customer_management_created():
     db = db_connector()
     cursor = db.cursor(dictionary = True)
 
-    query = ("insert into customer_management(firstname,lastname,phone,email,pancard,ifsc,aadhaar,address) values( %s ,%s ,%s ,%s ,%s ,%s,%s,%s)")
-    values = (firstname,lastname,phone,email,pancard,ifsc,aadhaar,address)
+    query = ("insert into customer_management(firstname,lastname,password,phone,email,pancard,ifsc,aadhaar,address) values( %s,%s ,%s ,%s ,%s ,%s ,%s,%s,%s)")
+    values = (firstname,lastname,password,phone,email,pancard,ifsc,aadhaar,address)
 
     cursor.execute(query,values)
     db.commit()
@@ -101,6 +132,7 @@ def customer_edit(id):
 def update_customer(id):
     firstname = request.form['firstname']
     lastname = request.form['lastname']
+    password = request.form['password']
     phone = request.form['phone']
     email = request.form['email']
     pancard = request.form['pancard']
@@ -111,8 +143,8 @@ def update_customer(id):
     db = db_connector()
     cursor = db.cursor(dictionary = True)
     
-    query = 'update customer_management set firstname=%s,lastname=%s,phone=%s,email=%s,pancard=%s,ifsc=%s,aadhaar=%s,address=%s where id = %s'
-    values = (firstname,lastname,phone,email,pancard,ifsc,aadhaar,address,id)
+    query = 'update customer_management set firstname=%s,lastname=%s,password=%s,phone=%s,email=%s,pancard=%s,ifsc=%s,aadhaar=%s,address=%s where id = %s'
+    values = (firstname,lastname,password,phone,email,pancard,ifsc,aadhaar,address,id)
     cursor.execute(query,values)
 
     db.commit()

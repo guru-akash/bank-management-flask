@@ -7,16 +7,49 @@
     <link rel="stylesheet" href="{{url_for('static',filename='css/admin_dashboard.css')}}">
 </head>
 <body>
+
     <nav>
-        <h2>Admin Menu</h2>
-        <a href="/admin_dashboard">Dashboard</a><br><br>
-        <a href="/customer_management_table">Customer Management</a><br><br>
-        <a href="/account_table">Account Creation</a><br><br>
-        <a href="/transaction_request">Transaction Request</a>
-        <a href="/transaction">Transaction</a><br><br>
-        <a href="/">Logout</a>
+
+        {% if session.get('role') == 'admin' %}
+
+            <h2>Admin Menu</h2>
+
+            <a href="/admin_dashboard">Dashboard</a><br><br>
+
+            <a href="/customer_management_table">
+                Customer Management
+            </a><br><br>
+
+            <a href="/account_table">
+                Account Creation
+            </a><br><br>
+
+            <a href="/transaction_request">
+                Transaction Request
+            </a><br><br>
+
+            <a href="/transaction">
+                Transaction
+            </a><br><br>
+
+
+        {% elif session['role'] == 'customer' %}
+
+            <h2>Customer Menu</h2>
+
+            <a href="/cus_dashboard">
+                Dashboard
+            </a><br><br>
+
+            <a href="/transaction_request">
+                Transaction Request
+            </a><br><br>
+
+        {% endif %}
+
+        <a href="/logout">Logout</a>
+
     </nav>
 
-
-    </body>
+</body>
 </html>

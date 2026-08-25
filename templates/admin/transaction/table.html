@@ -15,6 +15,7 @@
             <th>Account Type</th>
             <th>Transaction Type</th>
             <th>Amount</th>
+            <td>Commission</td>
             <th>Actions</th>
         </tr>
         {% for transaction in transactions %}
@@ -24,6 +25,20 @@
             <td>{{transaction.account_type}}</td>
             <td>{{transaction.transaction_type}}</td>
             <td>{{transaction.amount}}</td>
+            <td>
+                {% if transaction.commission_status == 1 %}
+                    <button>
+                        <a href="/transaction_flat/{{transaction.id}}">flat</a>
+                    </button>
+                    <button>
+                        <a href="/transaction_percentage/{{transaction.id}}">Percentage</a>
+                    </button>
+                {% elif transaction.commission_status == 2 %}
+                    Flat 
+                {% else %}
+                    Persentage    
+                {% endif %}
+            </td>
             <td>
                 {% if transaction.approvel_status == 1 %}
                 <button>

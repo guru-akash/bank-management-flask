@@ -1,6 +1,7 @@
 from flask import Flask ,render_template ,redirect , request ,session
 import random
 import mysql.connector
+from decimal import Decimal
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -321,10 +322,10 @@ def request_form():
 
         db.commit()
 
-        return render_template ('transaction_request.html')
+        return render_template ('customer/transaction_request.html')
 
     else:
-        return render_template('transaction_request.html', error = 'Invalid account number or account type ')
+        return render_template('customer/transaction_request.html', error = 'Invalid account number or account type ')
 
 @app.route('/transaction_table')
 def transaction():
@@ -337,6 +338,87 @@ def transaction():
     transactions = cursor.fetchall()
 
     return render_template('admin/transaction/table.html', transactions = transactions)
+
+@app.route('/transaction_flat/<id>')
+def transaction_flat(id):
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    tran_query = 'select * from transaction_request where id=%s'
+    tran_values = (id, )
+    cursor.execute(tran_query,tran_values)
+
+    transaction = cursor.fetchone()
+
+    customer_id = transaction['customer_id']
+    
+    query = 'select * from accounts where customer_id=%s'
+    values = (customer_id, )
+    cursor.execute(query,values)
+
+    data = cursor.fetchone()
+
+    amount = data['balance']
+    amount = amount - 100
+
+    update_query = 'update accounts set balance = %s where customer_id = %s'
+    update_values = (amount,customer_id)
+    cursor.execute(update_query,update_values)
+
+    db.commit()
+
+    status = 2
+
+    status_query = 'update transaction_request set commission_status = %s where id = %s'
+    status_values = (status,id)
+    cursor.execute(status_query,status_values)
+
+    db.commit()
+
+    return redirect('/transaction_table')
+
+@app.route('/transaction_percentage/<id>')
+def transaction_percentage(id):
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    tran_query = 'select * from transaction_request where id=%s'
+    tran_values = (id, )
+    cursor.execute(tran_query,tran_values)
+
+    transaction = cursor.fetchone()
+
+    cash = transaction['amount']
+
+    cash = cash * Decimal('0.08')
+
+    customer_id = transaction['customer_id']
+    
+    query = 'select * from accounts where customer_id=%s'
+    values = (customer_id, )
+    cursor.execute(query,values)
+
+    data = cursor.fetchone()
+
+    amount = data['balance']
+    amount = amount - cash
+
+    update_query = 'update accounts set balance = %s where customer_id = %s'
+    update_values = (amount,customer_id)
+    cursor.execute(update_query,update_values)
+
+    db.commit()
+
+    status = 3
+
+    status_query = 'update transaction_request set commission_status = %s where id = %s'
+    status_values = (status,id)
+    cursor.execute(status_query,status_values)
+
+    db.commit()
+
+    return redirect('/transaction_table')
+
 
 @app.route('/approve_request/<id>')
 def approve_request(id):
@@ -362,9 +444,11 @@ def approve_request(id):
     else :
         balance = account['balance'] + data['amount']
 
-    update_query = 'update accounts set balance = %s where id = %s'
-    update_values = (balance,id)
+    update_query = 'update accounts set balance = %s where account_number = %s'
+    update_values = (balance,account_number)
     cursor.execute(update_query,update_values)
+
+    db.commit()
 
     approve = 2
     status_query = 'update transaction_request set approvel_status=%s where id=%s'
@@ -373,7 +457,6 @@ def approve_request(id):
     db.commit()
 
     return redirect('/transaction_table')
-
         
 @app.route('/denied_request/<id>')
 def denied_request(id):

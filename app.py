@@ -17,35 +17,34 @@ def db_connector():
 
 @app.route('/')
 def admin():
-    return render_template('login.html')
+    return render_template('login/login.html')
 
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
 
+@app.route('/create_customer')
+def create_customer():
+    return render_template('admin/customer_managment/create.html')
+
 @app.route('/cus_dashboard')
 def cus_dashboard():
-    session['id']=id
+    id = session['id']
 
     db = db_connector()
-    cursor = db.cursor(dictiomary = True)
+    cursor = db.cursor(dictionary = True)
 
-    query = 'select * from customer_management where id = %s'
-    values = (id, )
-    cursor.execute(query,value)
+    query = 'select * from accounts where customer_id = %s'
+    values = (id,)
+    cursor.execute(query,values)
 
     customer = cursor.fetchone()
 
-    return render_template('cus_dashboard.html', customer = customer )
-
-
-@app.route('/customer_management')
-def customer_management():
-    return render_template('customer_management.html')
+    return render_template('customer/dashboard.html', customer = customer )
 
 @app.route('/transaction_request')
 def transaction_request():
-    return render_template('transaction_request.html')
+    return render_template('customer/transaction_request.html')
 
 
 @app.route('/admin_log',methods=['post'])
@@ -79,6 +78,17 @@ def admin_log():
     else :
         return redirect('/')
 
+@app.route('/customer_management_table')
+def customer_table():
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    query = 'select * from customer_management'
+
+    cursor.execute(query)
+    customers = cursor.fetchall()
+
+    return render_template('admin/customer_management/table.html', customers = customers)
 
 @app.route('/customer_management_created', methods=['post'])
 def customer_management_created():
@@ -103,17 +113,6 @@ def customer_management_created():
 
     return redirect('/customer_management_table')
 
-@app.route('/customer_management_table')
-def customer_table():
-    db = db_connector()
-    cursor = db.cursor(dictionary = True)
-
-    query = 'select * from customer_management'
-
-    cursor.execute(query)
-    customers = cursor.fetchall()
-
-    return render_template('customer_management_table.html', customers = customers)
 
 @app.route('/customer_edit/<id>')
 def customer_edit(id):
@@ -126,7 +125,7 @@ def customer_edit(id):
 
     customer = cursor.fetchone()
 
-    return render_template('/customer_edit.html' ,customer = customer)
+    return render_template('admin/customer_management/edit.html' ,customer = customer)
 
 @app.route('/update_customer/<id>',methods=['post'])
 def update_customer(id):
@@ -177,6 +176,19 @@ def active_customer(id):
 
     return redirect('/customer_management_table')
 
+@app.route('/account_table')
+def account_table():
+    db=db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    query = ('select * from accounts')
+    cursor.execute(query)
+
+    accounts = cursor.fetchall()
+
+    return render_template('admin/account_creation/table.html',accounts = accounts)
+
+
 @app.route('/account_creation')
 def account_creation():
 
@@ -188,7 +200,7 @@ def account_creation():
 
     customers = cursor.fetchall()
 
-    return render_template('account_creation.html',customers=customers)
+    return render_template('admin/account_creation/create.html',customers=customers)
 
 @app.route('/create_account',methods=['post'])
 def create_account():
@@ -211,17 +223,6 @@ def create_account():
 
     return redirect('/account_table')
 
-@app.route('/account_table')
-def account_table():
-    db=db_connector()
-    cursor = db.cursor(dictionary = True)
-
-    query = ('select * from accounts')
-    cursor.execute(query)
-
-    accounts = cursor.fetchall()
-
-    return render_template('account_table.html',accounts = accounts)
 
 @app.route('/account_detail/<customer_id>')
 def account_detail(customer_id):
@@ -234,7 +235,7 @@ def account_detail(customer_id):
 
     customer = cursor.fetchone()
 
-    return render_template('account_detail.html' ,customer=customer)
+    return render_template('admin/account_creation/detail.html' ,customer=customer)
 
 @app.route('/account_edit/<customer_id>')
 def account_edit(customer_id):
@@ -251,7 +252,7 @@ def account_edit(customer_id):
     cursor.execute(customer_query,customer_value)
     customer = cursor.fetchone()
 
-    return render_template('account_edit.html' ,account = account ,customer = customer)
+    return render_template('admin/account_creation/edit.html' ,account = account ,customer = customer)
 
 @app.route('/update_account',methods=['post'])
 def update_account():
@@ -302,7 +303,7 @@ def request_form():
     amount = request.form['amount']
 
     db=db_connector()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary = True)
 
     check_query = 'select * from accounts where account_number = %s and account_type = %s '
     check_values = (account_number,account_type)
@@ -310,10 +311,12 @@ def request_form():
 
     check = cursor.fetchone()
 
+    customer_id = check['customer_id']
+
     if check:
 
-        query = 'insert into transaction_request(account_number,account_type,transaction_type,amount) values (%s,%s,%s,%s)'
-        values = (account_number,account_type,transaction_type,amount)
+        query = 'insert into transaction_request(customer_id,account_number,account_type,transaction_type,amount) values (%s,%s,%s,%s,%s)'
+        values = (customer_id,account_number,account_type,transaction_type,amount)
         cursor.execute(query,values)
 
         db.commit()
@@ -323,7 +326,7 @@ def request_form():
     else:
         return render_template('transaction_request.html', error = 'Invalid account number or account type ')
 
-@app.route('/transaction')
+@app.route('/transaction_table')
 def transaction():
     db = db_connector()
     cursor = db.cursor(dictionary = True)
@@ -333,12 +336,20 @@ def transaction():
 
     transactions = cursor.fetchall()
 
-    return render_template('transaction.html', transactions = transactions)
+    return render_template('admin/transaction/table.html', transactions = transactions)
 
-@app.route('/approve_request/<account_number>')
-def approve_request(account_number):
+@app.route('/approve_request/<id>')
+def approve_request(id):
     db = db_connector()
     cursor = db.cursor(dictionary = True)
+
+    query = 'select * from transaction_request where id = %s'
+    values = (id, )
+    cursor.execute(query,values)
+
+    data = cursor.fetchone()
+
+    account_number = data['account_number']
 
     balance_query = 'select balance from accounts where account_number = %s'
     balance_values = (account_number, )
@@ -346,29 +357,22 @@ def approve_request(account_number):
 
     account =cursor.fetchone()
 
-    query = 'select * from transaction_request where account_number = %s'
-    values = (account_number, )
-    cursor.execute(query,values)
-
-    data = cursor.fetchone()
-
     if data['transaction_type'] == 'withdraw':
         balance = account['balance'] - data['amount']
     else :
         balance = account['balance'] + data['amount']
 
-    update_query = 'update accounts set balance = %s where account_number = %s'
-    update_values = (balance,account_number)
+    update_query = 'update accounts set balance = %s where id = %s'
+    update_values = (balance,id)
     cursor.execute(update_query,update_values)
 
     approve = 2
-    status_query = 'update transaction_request set approvel_status=%s where account_number=%s'
-    status_values = (approve,account_number)
-    cursor.execute(status_query,status_values)
-    
+    status_query = 'update transaction_request set approvel_status=%s where id=%s'
+    status_values = (approve,id)
+    cursor.execute(status_query,status_values)    
     db.commit()
 
-    return redirect('/transaction')
+    return redirect('/transaction_table')
 
         
 @app.route('/denied_request/<id>')
@@ -382,8 +386,30 @@ def denied_request(id):
 
     db.commit()
 
-    return redirect('/transaction')
+    return redirect('/transaction_table')
 
+@app.route('/customer_transaction')
+def customer_transaction():
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    id = session['id']
+
+    query = 'select * from accounts where customer_id =%s'
+    values = (id,)
+    cursor.execute(query,values)
+
+    account = cursor.fetchone()
+
+    account_number = account['account_number']
+
+    check_query = 'select * from transaction_request where account_number = %s'
+    check_value = (account_number,)
+    cursor.execute(check_query,check_value)
+
+    transactions = cursor.fetchall()
+
+    return render_template('customer/transaction.html', transactions = transactions)
 
 if __name__ == '__main__':
     app.run(debug=True)

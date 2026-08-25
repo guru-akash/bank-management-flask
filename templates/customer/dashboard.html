@@ -4,11 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/cus_dashboard.css')}}">
 </head>
 <body>
     {% include '/layouts/menu.html' %}
     <div>
-        <h2>User Name :</h2>
+        <h2>Account Detail</h2>
+        <p>Account Number : {{customer.account_number}} <br><br>
+            balance : {{customer.balance}} <br><br>
+        </p>
+
     </div>
 </body>
 </html>

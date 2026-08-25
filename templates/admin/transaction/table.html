@@ -25,8 +25,18 @@
             <td>{{transaction.transaction_type}}</td>
             <td>{{transaction.amount}}</td>
             <td>
-                <button><a href="/approve_request/{{transaction.account_number}}">Approve</a></button>
-                <button><a href="/denied_request/{{transaction.id}}">Denied</a></button>
+                {% if transaction.approvel_status == 1 %}
+                <button>
+                    <a href="/approve_request/{{transaction.id}}">Approve</a>
+                </button>
+                <button>
+                    <a href="/denied_request/{{transaction.id}}">Deny</a>
+                </button>
+                {% elif transaction.approvel_status == 2 %}
+                    Approved
+                {% else %}
+                    Denied    
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

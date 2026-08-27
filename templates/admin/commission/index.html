@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Commission</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/commission_index.css')}}">
+
+</head>
+
+<body>
+    {% include '/layouts/menu.html' %}
+
+    <form action="/commission_index" method="post" class="commission-form">
+    
+            <h2>Commission</h2>
+
+            <div class="option">
+
+                <label>
+                    <input
+                        type="radio"
+                        name="commission_type"
+                        value="flat"
+                        onclick="showCommission('flat')"
+                    >
+                    Flat
+                </label>
+
+                <label>
+                    <input
+                        type="radio"
+                        name="commission_type"
+                        value="percentage"
+                        onclick="showCommission('percentage')"
+                    >
+                    Percentage
+                </label>
+
+            </div>
+
+
+            <div id="flat-form" class="input-box">
+
+                <label>Flat Commission Value</label>
+
+                <input
+                    type="number"
+                    name="flat_value"
+                    placeholder="Enter flat commission"
+                ><br><br>
+
+                <button type="submit">Submit</button>
+
+            </div>
+
+
+            <div id="percentage-form" class="input-box" >
+
+                <label>Commission Percentage</label>
+
+                <input
+                    type="number"
+                    name="percentage_value"
+                    placeholder="Enter percentage"
+                    min="0"
+                    max="100"
+                ><br><br>
+
+                <button type="submit">Submit</button>
+
+            </div>
+
+ 
+    </form>
+
+    <script>
+
+        function showCommission(type) {
+
+            const flatForm = document.getElementById("flat-form");
+            const percentageForm = document.getElementById("percentage-form");
+
+            if (type === "flat") {
+
+                flatForm.style.display = "block";
+                percentageForm.style.display = "none";
+
+            }
+
+            else if (type === "percentage") {
+
+                flatForm.style.display = "none";
+                percentageForm.style.display = "block";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+</html>

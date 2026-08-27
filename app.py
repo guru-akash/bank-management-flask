@@ -16,6 +16,8 @@ def db_connector():
 
     return db
 
+    
+
 @app.route('/')
 def admin():
     return render_template('login/login.html')
@@ -23,6 +25,10 @@ def admin():
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
+
+@app.route('/commission')
+def commission():
+    return render_template('admin/commission/index.html')
 
 @app.route('/create_customer')
 def create_customer():
@@ -40,6 +46,7 @@ def cus_dashboard():
     cursor.execute(query,values)
 
     customer = cursor.fetchone()
+    cursor.close()
 
     return render_template('customer/dashboard.html', customer = customer )
 
@@ -431,6 +438,8 @@ def approve_request(id):
 
     data = cursor.fetchone()
 
+    amount = data['amount']
+
     account_number = data['account_number']
 
     balance_query = 'select balance from accounts where account_number = %s'
@@ -439,10 +448,21 @@ def approve_request(id):
 
     account =cursor.fetchone()
 
+    balance = account['balance']
+
+    percentage = session['percantage']
+    flat = session['flat']
+
+    if percentage:
+        amount = amount * (percentage / 100)
+
+    if flat:
+        amount = amount - flat
+
     if data['transaction_type'] == 'withdraw':
-        balance = account['balance'] - data['amount']
+        balance = balance - amount
     else :
-        balance = account['balance'] + data['amount']
+        balance = balance + amount
 
     update_query = 'update accounts set balance = %s where account_number = %s'
     update_values = (balance,account_number)
@@ -470,6 +490,53 @@ def denied_request(id):
     db.commit()
 
     return redirect('/transaction_table')
+
+@app.route('/commission_index',methods = ['post'])
+def commission_index():
+    percentage = request.form['percentage_value']
+    flat = request.form['flat_value']
+
+    db = db_connector()
+    cursor = db.cursor(dictionary = True)
+
+    query = 'select * from commission'
+    cursor.execute(query)
+
+    
+    select = cursor.fetchone()
+    print(select)
+
+    value = 0
+
+
+    if not select:       
+        if percentage:
+            new_per_query = 'insert into commission(percentage) values(%s)'
+            new_per_values = (percentage,)
+            cursor.execute(new_per_query,new_per_values)
+
+        if flat:
+            new_flat_query = 'insert into commission(flat) values(%s)'
+            new_flat_values = (flat,)
+            cursor.execute(new_flat_query,new_flat_values)
+
+    else :
+        id = select['id']
+
+        if percentage:
+            per_query = 'update commission set percentage = %s, flat = %s where id = %s'
+            per_values = (percentage,value,id)
+            cursor.execute(per_query,per_values)
+
+        if flat:
+            flat_query = 'update commission set flat = %s ,percentage = %s where id =%s'
+            flat_values = (flat,value,id)
+            cursor.execute(flat_query,flat_values)
+
+
+    db.commit()
+
+    return redirect('/commission')
 
 @app.route('/customer_transaction')
 def customer_transaction():

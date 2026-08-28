@@ -13,10 +13,8 @@ def db_connector():
         password = '',
         database = 'bank_management'
     )
-
-    return db
-
     
+    return db
 
 @app.route('/')
 def admin():
@@ -110,7 +108,7 @@ def customer_management_created():
     aadhaar = request.form['aadhaar'] 
     address = request.form['address']
 
-    db = db_connector()
+    db = db.connector()
     cursor = db.cursor(dictionary = True)
 
     query = ("insert into customer_management(firstname,lastname,password,phone,email,pancard,ifsc,aadhaar,address) values( %s,%s ,%s ,%s ,%s ,%s ,%s,%s,%s)")
@@ -346,85 +344,6 @@ def transaction():
 
     return render_template('admin/transaction/table.html', transactions = transactions)
 
-@app.route('/transaction_flat/<id>')
-def transaction_flat(id):
-    db = db_connector()
-    cursor = db.cursor(dictionary = True)
-
-    tran_query = 'select * from transaction_request where id=%s'
-    tran_values = (id, )
-    cursor.execute(tran_query,tran_values)
-
-    transaction = cursor.fetchone()
-
-    customer_id = transaction['customer_id']
-    
-    query = 'select * from accounts where customer_id=%s'
-    values = (customer_id, )
-    cursor.execute(query,values)
-
-    data = cursor.fetchone()
-
-    amount = data['balance']
-    amount = amount - 100
-
-    update_query = 'update accounts set balance = %s where customer_id = %s'
-    update_values = (amount,customer_id)
-    cursor.execute(update_query,update_values)
-
-    db.commit()
-
-    status = 2
-
-    status_query = 'update transaction_request set commission_status = %s where id = %s'
-    status_values = (status,id)
-    cursor.execute(status_query,status_values)
-
-    db.commit()
-
-    return redirect('/transaction_table')
-
-@app.route('/transaction_percentage/<id>')
-def transaction_percentage(id):
-    db = db_connector()
-    cursor = db.cursor(dictionary = True)
-
-    tran_query = 'select * from transaction_request where id=%s'
-    tran_values = (id, )
-    cursor.execute(tran_query,tran_values)
-
-    transaction = cursor.fetchone()
-
-    cash = transaction['amount']
-
-    cash = cash * Decimal('0.08')
-
-    customer_id = transaction['customer_id']
-    
-    query = 'select * from accounts where customer_id=%s'
-    values = (customer_id, )
-    cursor.execute(query,values)
-
-    data = cursor.fetchone()
-
-    amount = data['balance']
-    amount = amount - cash
-
-    update_query = 'update accounts set balance = %s where customer_id = %s'
-    update_values = (amount,customer_id)
-    cursor.execute(update_query,update_values)
-
-    db.commit()
-
-    status = 3
-
-    status_query = 'update transaction_request set commission_status = %s where id = %s'
-    status_values = (status,id)
-    cursor.execute(status_query,status_values)
-
-    db.commit()
-
-    return redirect('/transaction_table')
 
 
 @app.route('/approve_request/<id>')
@@ -450,30 +369,50 @@ def approve_request(id):
 
     balance = account['balance']
 
-    percentage = session['percantage']
-    flat = session['flat']
+    wallet_query = 'select * from bank_wallet'
+    cursor.execute(wallet_query)
 
-    if percentage:
-        amount = amount * (percentage / 100)
+    bank_wallet = cursor.fetchone()
 
-    if flat:
-        amount = amount - flat
+    wallet_id = bank_wallet['id']
+    wallet = bank_wallet['wallet']
 
-    if data['transaction_type'] == 'withdraw':
+    commission_query = 'select * from commission'
+    cursor.execute(commission_query)
+
+    commission = cursor.fetchone()
+
+    percentage = commission['percentage']
+    flat = commission['flat']
+
+    if data['transaction_type'] == 'withdraw' :
         balance = balance - amount
-    else :
+
+        if percentage != 0 :
+            per_amount = amount * (percentage / 100)
+            wallet += per_amount
+
+        if flat !=0 :
+            flat_amount = amount - flat
+            wallet += flat
+    elif data['transaction_type'] == 'deposite':
         balance = balance + amount
+        if wallet >= amount:
+             wallet -= amount
 
     update_query = 'update accounts set balance = %s where account_number = %s'
     update_values = (balance,account_number)
     cursor.execute(update_query,update_values)
 
-    db.commit()
-
     approve = 2
     status_query = 'update transaction_request set approvel_status=%s where id=%s'
     status_values = (approve,id)
-    cursor.execute(status_query,status_values)    
+    cursor.execute(status_query,status_values)
+
+    add_query = 'update bank_wallet set wallet = %s where id=%s'
+    add_values = (wallet,wallet_id) 
+    cursor.execute(add_query,add_values)
+
     db.commit()
 
     return redirect('/transaction_table')

@@ -351,11 +351,22 @@ def approve_request(id):
     db = db_connector()
     cursor = db.cursor(dictionary = True)
 
+    email = session['email']
+
+    admin_query = 'select * from admin_log where email = %s'
+    admin_values = (email,)
+    cursor.execute(admin_query,admin_values)
+
+    admin_detail = cursor.fetchone()
+    admin_name = admin_detail['name']
+
     query = 'select * from transaction_request where id = %s'
     values = (id, )
     cursor.execute(query,values)
 
     data = cursor.fetchone()
+
+    transaction_type = data['transaction_type']
 
     amount = data['amount']
 
@@ -391,14 +402,27 @@ def approve_request(id):
         if percentage != 0 :
             per_amount = amount * (percentage / 100)
             wallet += per_amount
+            trans_amount = amount - per_amount
+            com_amount = per_amount
 
         if flat !=0 :
-            flat_amount = amount - flat
-            wallet += flat
+            if amount <=1000 :
+                wallet += 50
+                trans_amount = amount - 50
+                com_amount = 50
+            elif amount <=2500 :
+                wallet += 100
+                trans_amount = amount - 100
+                com_amount = 100
+            else :
+                trans_amount = amount - flat
+                wallet += flat
+                com_amount = flat
     elif data['transaction_type'] == 'deposite':
         balance = balance + amount
         if wallet >= amount:
              wallet -= amount
+             trans_amount = amount
 
     update_query = 'update accounts set balance = %s where account_number = %s'
     update_values = (balance,account_number)
@@ -412,6 +436,10 @@ def approve_request(id):
     add_query = 'update bank_wallet set wallet = %s where id=%s'
     add_values = (wallet,wallet_id) 
     cursor.execute(add_query,add_values)
+
+    wall_trans_query = 'insert into wallet_transaction(transaction_type,commission_amount,transaction_amount,wallet_amount,access_admin) values(%s,%s,%s,%s,%s)'
+    wall_trans_values = (transaction_type,com_amount,trans_amount,wallet,admin_name)
+    cursor.execute(wall_trans_query,wall_trans_values)
 
     db.commit()
 

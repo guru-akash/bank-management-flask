@@ -573,20 +573,33 @@ def upload_file():
 
     for i,active_row in enumerate(active_row.iter_rows(min_row=2),start=1):
 
-        print('entered loop')
-        print(i)
         id = active_row[0].value
         customer_id = active_row[1].value
         account_number = active_row[2].value
         transaction_type = active_row[3].value
         amount = active_row[4].value
-        print(account_number)
 
-        if id == 0 or customer_id == 0 or account_number == 0 or transaction_type == 0 or amount == 0:
-            return f"Please fill the field in {i} row"
+        if id == 0 :
+            return f"Please fill the id in {i} row"
+        if customer_id == 0 :
+            return f"Please fill the customer_id in {i} row"
+        if account_number == 0 :
+            return f"Please fill the account_number in {i} row"
+        if transaction_type == 0 :
+            return f"Please fill the transaction_type in {i} row"
+        if amount == 0 :
+            return f"Please fill the amount in {i} row"
         
-        elif id is None or customer_id is None or account_number is None or transaction_type is None or amount is None:
-              return f"Please fill the field in {i} row"
+        if id is None :
+              return f"Please fill the id in {i} row"
+        if customer_id is None :
+              return f"Please fill the customer_id in {i} row"
+        if account_number is None :
+              return f"Please fill the account_number in {i} row"
+        if transaction_type is None :       
+              return f"Please fill the transaction_type in {i} row"
+        if amount is None :
+              return f"Please fill the amount in {i} row"
           
 
 

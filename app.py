@@ -1,10 +1,15 @@
-from flask import Flask ,render_template ,redirect , request ,session
+from flask import Flask ,render_template ,redirect , request ,session ,send_file
 import random
+import pandas as pd
 import mysql.connector
 from decimal import Decimal
+from openpyxl import load_workbook
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
+
+ALLOWED_EXTENSIONS = {'csv', 'xlsx', 'xls'}
+
 
 def db_connector():
     db = mysql.connector.connect(
@@ -19,6 +24,7 @@ def db_connector():
 @app.route('/')
 def admin():
     return render_template('login/login.html')
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -504,6 +510,91 @@ def commission_index():
     db.commit()
 
     return redirect('/commission')
+
+@app.route('/fund_transfer')
+def fund_transfer():
+    return render_template('admin/fund_transfer/fund_transfer_request.html')
+
+@app.route('/download_excel')
+def download_excel():
+
+    db = db_connector()
+
+    query = """
+        SELECT id,customer_id,account_number,transaction_type,amount
+        FROM transaction_request
+        WHERE transaction_type = %s
+    """
+
+    values = ('fund_transfer',)
+
+    df = pd.read_sql(
+        query,
+        db,
+        params=values
+    )
+
+    file_path = "static/fund_transfer_list.xlsx"
+
+    df.to_excel(file_path, index=False)
+
+    db.close()
+
+    return send_file(
+        file_path,
+        as_attachment=True,
+        download_name="fund_transfer_list.xlsx"
+    )
+
+def allowed_file(filename):
+    return (
+        '.' in filename and
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
+
+
+@app.route('/upload_file', methods=['POST'])
+def upload_file():
+
+    file = request.files.get('file')
+
+    if not file:
+        return "Please select a file"
+
+    if file.filename == '':
+        return "No file selected"
+
+    if not allowed_file(file.filename):
+        return "Only CSV and Excel files are allowed"
+
+
+    data=load_workbook(file) 
+    active_row=data.active 
+
+    for i,active_row in enumerate(active_row.iter_rows(min_row=2),start=1):
+
+        print('entered loop')
+        print(i)
+        id = active_row[0].value
+        customer_id = active_row[1].value
+        account_number = active_row[2].value
+        transaction_type = active_row[3].value
+        amount = active_row[4].value
+        print(account_number)
+
+        if id == 0 or customer_id == 0 or account_number == 0 or transaction_type == 0 or amount == 0:
+            return f"Please fill the field in {i} row"
+        
+        elif id is None or customer_id is None or account_number is None or transaction_type is None or amount is None:
+              return f"Please fill the field in {i} row"
+          
+
+
+    return "validation successful"         
+
+ 
+    
+   
 
 @app.route('/customer_transaction')
 def customer_transaction():

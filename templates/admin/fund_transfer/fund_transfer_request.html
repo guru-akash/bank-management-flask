@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/fund_transaction.css')}}">
+</head>
+<body>
+    {% include '/layouts/menu.html' %}
+    <form action="/download_excel" method="GET">
+        <button type="submit">Download Excel</button>
+    </form><br><br>
+    <form action="/upload_file" method="POST" enctype="multipart/form-data">
+    <label for="file">Upload CSV / Excel:</label><br><br>
+    <input
+        type="file"
+        id="file"
+        name="file"
+        accept=".csv, .xlsx, .xls"
+        required
+    ><br><br>
+    <button type="submit">Upload</button>
+</form>
+
+</body>
+</html>

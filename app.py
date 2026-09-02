@@ -1,4 +1,4 @@
-from flask import Flask ,render_template ,redirect , request ,session ,send_file
+from flask import Flask ,render_template ,redirect , request ,session ,send_file ,flash ,url_for
 import random
 import pandas as pd
 import mysql.connector
@@ -429,6 +429,14 @@ def approve_request(id):
         if wallet >= amount:
              wallet -= amount
              trans_amount = amount
+             com_amount = 0
+
+    elif data['transaction_type'] == 'fund_transfer':
+        blalance = balance + amount
+        if wallet >= amount:
+             wallet -= amount
+             trans_amount = amount
+             com_amount = 0
 
     update_query = 'update accounts set balance = %s where account_number = %s'
     update_values = (balance,account_number)
@@ -523,10 +531,10 @@ def download_excel():
     query = """
         SELECT id,customer_id,account_number,transaction_type,amount
         FROM transaction_request
-        WHERE transaction_type = %s
+        WHERE transaction_type = %s AND approvel_status = %s
     """
 
-    values = ('fund_transfer',)
+    values = ('fund_transfer', 2)
 
     df = pd.read_sql(
         query,
@@ -579,31 +587,27 @@ def upload_file():
         transaction_type = active_row[3].value
         amount = active_row[4].value
 
-        if id == 0 :
-            return f"Please fill the id in {i} row"
-        if customer_id == 0 :
-            return f"Please fill the customer_id in {i} row"
-        if account_number == 0 :
-            return f"Please fill the account_number in {i} row"
-        if transaction_type == 0 :
-            return f"Please fill the transaction_type in {i} row"
-        if amount == 0 :
-            return f"Please fill the amount in {i} row"
-        
-        if id is None :
-              return f"Please fill the id in {i} row"
-        if customer_id is None :
-              return f"Please fill the customer_id in {i} row"
-        if account_number is None :
-              return f"Please fill the account_number in {i} row"
-        if transaction_type is None :       
-              return f"Please fill the transaction_type in {i} row"
-        if amount is None :
-              return f"Please fill the amount in {i} row"
-          
+        if id is None or id == 0:
+            flash(f"Please fill the id in {i} row", "error")
+            return redirect(url_for('fund_transfer'))
 
+        if customer_id is None or customer_id == 0:
+            flash(f"Please fill the customer_id in {i} row", "error")
+            return redirect(url_for('fund_transfer'))
 
-    return "validation successful"         
+        if account_number is None or account_number == 0:
+            flash(f"Please fill the account_number in {i} row", "error")
+            return redirect(url_for('fund_transfer'))
+
+        if transaction_type is None or transaction_type == 0:
+            flash(f"Please fill the transaction_type in {i} row", "error")
+            return redirect(url_for('fund_transfer'))
+
+        if amount is None or amount == 0:
+            flash(f"Please fill the amount in {i} row", "error")
+            return redirect(url_for('fund_transfer'))
+
+    return "validation successful"      
 
  
     
